@@ -1,0 +1,6 @@
+apiVersion: v2
+name: kafka-consumer
+version: 0.0.1
+description: Kafka consumer that writes messages to S3
+appVersion: "1.0.0"
+type: application

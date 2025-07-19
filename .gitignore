@@ -1,0 +1,10 @@
+.DS_Store
+.idea/
+*.code-workspace
+*.tfstate*
+.terraform/
+*.tfplan
+backend*.hcl
+apps/.helm/**/charts/
+.docker-cache/
+__pycache__/

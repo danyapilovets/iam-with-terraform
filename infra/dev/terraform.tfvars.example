@@ -1,0 +1,4 @@
+ami_id           = "ami-xxxxxxxxxxxxxxxxx"
+public_subnet_id = "subnet-xxxxxxxxxxxxxxxxx"
+sg_id            = "sg-xxxxxxxxxxxxxxxxx"
+aws_region       = "eu-central-1"

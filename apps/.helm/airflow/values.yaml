@@ -1,0 +1,17 @@
+executor: LocalExecutor
+webserver:
+  service:
+    type: ClusterIP
+customEnv:
+  - name: S3_BUCKET
+    value: dev-iwt-private-CHANGE_ME
+
+externalDatabase:
+  type: postgres
+  host: rds-endpoint-change-me
+  port: 5432
+  database: airflow
+  user: airflow
+  passwordSecret:
+    secretName: airflow-db-secret
+    passwordKey: password

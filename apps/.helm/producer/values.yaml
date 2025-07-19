@@ -1,0 +1,7 @@
+image:
+  repository: producer
+  tag: latest
+  pullPolicy: IfNotPresent
+kafka:
+  bootstrapServers: kafka:9092
+  topic: card_tx

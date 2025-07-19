@@ -1,0 +1,10 @@
+resources:
+  - configs/namespace
+  - configs/helmrepo/bitnami-helmrepo.yaml
+  - configs/helmrepo/external-secrets-helmrepo.yaml
+  - configs/external-secrets/external-secrets-helmrelease.yaml
+  - configs/kafka
+  - configs/airflow
+  - configs/consumer
+  - configs/producer
+  - configs/secrets 

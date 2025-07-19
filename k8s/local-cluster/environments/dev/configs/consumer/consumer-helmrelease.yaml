@@ -1,0 +1,18 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: kafka-consumer
+  namespace: dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: apps/kafka-consumer/.charts/kafka-consumer-0.1.0.tgz
+      sourceRef:
+        kind: GitRepository
+        name: dev-repo
+        namespace: flux-system
+  values:
+    s3Bucket: dev-iwt-private-2cap2d
+    awsSecret: aws-secret
+    awsRegion: eu-central-1

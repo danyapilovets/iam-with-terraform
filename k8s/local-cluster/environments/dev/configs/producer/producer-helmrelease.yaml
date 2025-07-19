@@ -1,0 +1,18 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: producer
+  namespace: dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: apps/.helm/producer/.charts/producer-0.1.0.tgz
+      sourceRef:
+        kind: GitRepository
+        name: dev-repo
+        namespace: flux-system
+  values:
+    kafka:
+      bootstrapServers: kafka:9092
+      topic: card_tx

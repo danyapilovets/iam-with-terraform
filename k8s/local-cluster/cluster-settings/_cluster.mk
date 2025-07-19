@@ -12,4 +12,4 @@ mk-stop: ## Stop minikube
 mk-status: ## Cluster info
 	$(KUBECTL) cluster-info; $(KUBECTL) get nodes -o wide
 
-.PHONY: mk-start mk-stop mk-status 
+.PHONY: mk-start mk-stop mk-status

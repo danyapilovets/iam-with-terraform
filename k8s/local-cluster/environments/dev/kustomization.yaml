@@ -7,4 +7,4 @@ resources:
   - configs/airflow
   - configs/consumer
   - configs/producer
-  - configs/secrets 
+  - configs/secrets

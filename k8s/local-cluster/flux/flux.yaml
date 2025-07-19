@@ -22,4 +22,4 @@ spec:
   sourceRef:
     kind: GitRepository
     name: dev-repo
-  timeout: 2m 
+  timeout: 2m

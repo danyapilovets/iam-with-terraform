@@ -13,4 +13,4 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    executor: LocalExecutor 
+    executor: LocalExecutor

@@ -1,4 +1,4 @@
 namespace: dev
 resources:
   - helmrepo/bitnami-helmrepo.yaml
-  - kafka-helmrelease.yaml 
+  - kafka-helmrelease.yaml

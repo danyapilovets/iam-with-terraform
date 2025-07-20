@@ -13,21 +13,22 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    executor: "LocalExecutor"
-    postgresql:
-      enabled: false
-    redis:
-      enabled: false
-    workers:
-      replicas: 0
-    triggerer:
-      enabled: false
-    statsd:
-      enabled: false
-    serviceAccount:
-      create: false
-      name: "airflow-serviceaccount"
-    scheduler:
-      replicas: 1
-    webserver:
-      replicas: 1
+    airflow:
+      executor: "LocalExecutor"
+      postgresql:
+        enabled: false
+      redis:
+        enabled: false
+      workers:
+        replicas: 0
+      triggerer:
+        enabled: false
+      statsd:
+        enabled: false
+      serviceAccount:
+        create: false
+        name: "airflow-serviceaccount"
+      scheduler:
+        replicas: 1
+      webserver:
+        replicas: 1

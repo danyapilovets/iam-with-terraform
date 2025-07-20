@@ -1,3 +1,4 @@
 namespace: dev
 resources:
+  - external-secrets-serviceaccount.yaml
   - external-secrets-helmrelease.yaml

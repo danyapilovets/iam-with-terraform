@@ -7,66 +7,17 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/.helm/airflow/.charts/airflow-0.0.1.tgz
+      chart: apps/.helm/airflow/.charts/airflow-0.0.2.tgz
       sourceRef:
         kind: GitRepository
         name: dev-repo
         namespace: flux-system
   values:
     executor: "LocalExecutor"
-    webserver:
-      replicas: 1
-      resources:
-        limits:
-          memory: 512Mi
-          cpu: 300m
-        requests:
-          memory: 256Mi
-          cpu: 150m
-    
-    scheduler:
-      replicas: 1
-      resources:
-        limits:
-          memory: 512Mi
-          cpu: 300m
-        requests:
-          memory: 256Mi
-          cpu: 150m
     postgresql:
+      enabled: false
+    redis:
       enabled: false
     serviceAccount:
       create: false
       name: "airflow-serviceaccount"
-    secret:
-    - envName: "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
-      secretName: "postgres-secret"
-      secretKey: "AIRFLOW_DB_CONN"
-    extraSecrets:
-      airflow-s3-connection:
-        - envName: "AIRFLOW_CONN_S3_DATA"
-          secretName: "airflow-s3-connection"
-          secretKey: "AIRFLOW_CONN_S3_DATA"
-        - envName: "AIRFLOW_CONN_POSTGRES_DATA"
-          secretName: "airflow-s3-connection"
-          secretKey: "AIRFLOW_CONN_POSTGRES_DATA"
-    redis:
-      enabled: false
-    workers:
-      replicas: 0
-    statsd:
-      enabled: false
-    triggerer:
-      enabled: false
-    airflow:
-      config:
-        core:
-          load_examples: false
-          max_active_runs_per_dag: 1
-          dagbag_import_timeout: 30
-        webserver:
-          workers: 1
-          worker_refresh_interval: 60
-        scheduler:
-          catchup_by_default: false
-          max_threads: 2

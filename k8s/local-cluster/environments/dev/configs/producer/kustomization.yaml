@@ -1,3 +1,4 @@
 namespace: dev
 resources:
+  - producer-serviceaccount.yaml
   - producer-helmrelease.yaml

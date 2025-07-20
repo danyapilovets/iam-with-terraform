@@ -17,32 +17,17 @@ spec:
         app.kubernetes.io/name: {{ include "kafka-consumer.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      serviceAccountName: kafka-consumer-sa
       containers:
       - name: consumer
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
-          # AWS S3 credentials from External Secrets
-          - name: AWS_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.awsSecret }}
-                key: aws_access_key_id
-          - name: AWS_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.awsSecret }}
-                key: aws_secret_access_key
+          # AWS region and S3 bucket (IAM роль используется автоматически)
           - name: AWS_REGION
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.awsSecret }}
-                key: aws_region
+            value: "{{ .Values.awsRegion }}"
           - name: S3_BUCKET
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.awsSecret }}
-                key: s3_bucket
+            value: "{{ .Values.s3Bucket }}"
           # Kafka configuration
           - name: BOOTSTRAP_SERVERS
             value: {{ .Values.kafka.bootstrapServers }}

@@ -52,3 +52,15 @@ output "external_secrets_config_secret_arn" {
   description = "ARN of External Secrets config secret"
   value       = data.aws_secretsmanager_secret.external_secrets_config.arn
 }
+
+output "external_secrets_minikube_access_key_id" {
+  description = "Access Key ID for External Secrets minikube user"
+  value       = aws_iam_access_key.external_secrets_minikube.id
+  sensitive   = true
+}
+
+output "external_secrets_minikube_secret_access_key" {
+  description = "Secret Access Key for External Secrets minikube user" 
+  value       = aws_iam_access_key.external_secrets_minikube.secret
+  sensitive   = true
+}

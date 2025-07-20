@@ -7,7 +7,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/.helm/producer/.charts/producer-0.1.0.tgz
+      chart: apps/.helm/producer/.charts/producer-0.0.1.tgz
       sourceRef:
         kind: GitRepository
         name: dev-repo

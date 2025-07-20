@@ -7,10 +7,11 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/.helm/airflow
+      chart: airflow
+      version: 0.0.2
       sourceRef:
-        kind: GitRepository
-        name: dev-repo
+        kind: HelmRepository
+        name: github-packages
         namespace: flux-system
   values:
     airflow:

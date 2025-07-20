@@ -3,7 +3,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 4.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -16,8 +16,8 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 provider "aws" {
-  region = var.aws_region
-  
+  region  = var.aws_region
+  profile = "terraform-dev"
   default_tags {
     tags = {
       Environment   = var.environment

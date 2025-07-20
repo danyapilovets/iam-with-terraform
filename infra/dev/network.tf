@@ -37,7 +37,6 @@ resource "aws_security_group" "vpce_sg" {
   name_prefix = "${local.name_prefix}-vpce-"
   vpc_id      = data.aws_subnet.public.vpc_id
   description = "Security group for VPC Interface Endpoints"
-
   ingress {
     from_port   = 443
     to_port     = 443
@@ -45,7 +44,6 @@ resource "aws_security_group" "vpce_sg" {
     cidr_blocks = [data.aws_vpc.main.cidr_block]
     description = "HTTPS from VPC resources"
   }
-
   egress {
     from_port   = 53
     to_port     = 53
@@ -53,7 +51,6 @@ resource "aws_security_group" "vpce_sg" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "DNS TCP queries"
   }
-
   egress {
     from_port   = 53
     to_port     = 53
@@ -61,7 +58,6 @@ resource "aws_security_group" "vpce_sg" {
     cidr_blocks = ["0.0.0.0/0"]
     description = "DNS UDP queries"
   }
-
   tags = {
     Environment = var.environment
     Purpose     = "VPCEndpoints"

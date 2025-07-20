@@ -105,6 +105,18 @@ module "role_external_secrets" {
   })
 }
 
+# EC2 Demo Role
+module "role_ec2_demo" {
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-ec2-demo-role"
+  assume_role_policy_json = data.aws_iam_policy_document.ec2_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "demo-instance"
+  })
+}
+
 module "policy_terraform_infrastructure" {
   source = "../modules/iam-policy"
   
@@ -253,6 +265,27 @@ module "policy_external_secrets" {
   })
 }
 
+# EC2 Basic Policy
+module "policy_ec2_demo" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-ec2-demo-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "terraform_infrastructure" {
   role       = module.role_terraform_infrastructure.role_name
   policy_arn = module.policy_terraform_infrastructure.policy_arn
@@ -276,4 +309,15 @@ resource "aws_iam_role_policy_attachment" "kafka_consumer" {
 resource "aws_iam_role_policy_attachment" "external_secrets" {
   role       = module.role_external_secrets.role_name
   policy_arn = module.policy_external_secrets.policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_demo" {
+  role       = module.role_ec2_demo.role_name
+  policy_arn = module.policy_ec2_demo.policy_arn
+}
+
+# Instance Profile for EC2
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${local.name_prefix}-ec2-profile"
+  role = module.role_ec2_demo.role_name
 }

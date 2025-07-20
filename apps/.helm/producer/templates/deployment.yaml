@@ -68,4 +68,4 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
         resources:
-          {{- toYaml .Values.resources | nindent 12 }} 
+          {{- toYaml .Values.resources | nindent 12 }}

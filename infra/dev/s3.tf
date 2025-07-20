@@ -9,7 +9,6 @@ module "s3_private" {
   bucket_name   = "${local.name_prefix}-private-${random_string.suffix.result}"
   force_destroy = var.s3_bucket_force_destroy
   acl           = var.s3_bucket_acl
-  
   tags = merge(local.common_tags, {
     Name        = "${local.name_prefix}-private-bucket"
     DataType    = "transactions"
@@ -22,7 +21,6 @@ module "s3_analytics" {
   bucket_name   = "${local.name_prefix}-analytics-${random_string.suffix.result}"
   force_destroy = var.s3_bucket_force_destroy
   acl           = var.s3_bucket_acl
-  
   tags = merge(local.common_tags, {
     Name        = "${local.name_prefix}-analytics-bucket"
     DataType    = "analytics"
@@ -65,7 +63,7 @@ data "aws_iam_policy_document" "s3_vpce_policy" {
       ]
     }
   }
-  
+
   statement {
     sid       = "AllowListFromAuthorizedRoles"
     effect    = "Allow"
@@ -96,7 +94,6 @@ resource "aws_s3_bucket_versioning" "private_bucket_versioning" {
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "private_bucket_encryption" {
   bucket = module.s3_private.bucket_id
-
   rule {
     apply_server_side_encryption_by_default {
       sse_algorithm = "AES256"
@@ -107,28 +104,23 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "private_bucket_en
 
 resource "aws_s3_bucket_logging" "private_bucket_logging" {
   bucket = module.s3_private.bucket_id
-
   target_bucket = module.s3_analytics.bucket_id
   target_prefix = "access-logs/"
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "private_bucket_lifecycle" {
   bucket = module.s3_private.bucket_id
-
   rule {
     id     = "transaction_data_lifecycle"
     status = "Enabled"
-
     transition {
       days          = 30
       storage_class = "STANDARD_IA"
     }
-
     transition {
       days          = 90
       storage_class = "GLACIER"
     }
-
     transition {
       days          = 365
       storage_class = "DEEP_ARCHIVE"

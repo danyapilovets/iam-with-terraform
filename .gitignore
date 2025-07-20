@@ -11,3 +11,11 @@ apps/.helm/**/.charts/
 .docker-cache/
 __pycache__/
 .terraform/
+
+# Terraform lock file (not needed for demo)
+.terraform.lock.hcl
+*/.terraform.lock.hcl
+
+# Minikube specific files (demo environment only)
+iam_minikube_user.tf
+*/iam_minikube_user.tf

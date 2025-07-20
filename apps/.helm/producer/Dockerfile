@@ -8,6 +8,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 WORKDIR /app
 COPY ./main.py /app/main.py
-COPY ./db_connect_events.py /app/db_connect_events.py
 
 ENTRYPOINT ["python", "main.py"]

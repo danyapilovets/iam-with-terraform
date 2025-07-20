@@ -2,7 +2,7 @@ import os, time, json
 from kafka import KafkaConsumer
 import boto3
 
-TOPIC   = os.getenv("KAFKA_TOPIC", "card_transactions")
+TOPIC   = os.getenv("KAFKA_TOPIC", "banking.transactions")
 SERVERS = os.getenv("BOOTSTRAP_SERVERS", "kafka:9092").split(",")
 BUCKET  = os.environ["S3_BUCKET"]
 REGION  = os.getenv("AWS_REGION", "eu-central-1")

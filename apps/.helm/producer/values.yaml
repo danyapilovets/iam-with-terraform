@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/danyapilovets/producer
-  tag: "1.0.0"
+  tag: "1.0.1"
   pullPolicy: Always
 
 resources:
@@ -19,7 +19,7 @@ service:
 
 kafka:
   bootstrapServers: kafka:9092
-  topic: events.taxonomy
+  topic: banking.transactions
 
 postgres:
   host: postgres

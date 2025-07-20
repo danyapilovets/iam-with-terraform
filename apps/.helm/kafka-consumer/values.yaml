@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/danyapilovets/kafka-consumer
-  tag: "1.0.0"
+  tag: "1.0.1"
   pullPolicy: Always
 
 replicaCount: 1
@@ -18,6 +18,6 @@ awsSecret: kafka-consumer-secret
 awsRegion: eu-central-1
 
 kafka:
-  bootstrapServers: "kafka:9092"
-  topic: "events.taxonomy"
+  bootstrapServers: "kafka:9092" 
+  topic: "banking.transactions"
   consumerGroup: "banking-consumer-dev"

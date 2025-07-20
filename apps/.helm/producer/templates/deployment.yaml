@@ -54,7 +54,7 @@ spec:
         - name: KAFKA_BOOTSTRAP_SERVERS
           value: "kafka:9092"
         - name: KAFKA_TOPIC
-          value: "events.taxonomy"
+          value: "banking.transactions"
         livenessProbe:
           httpGet:
             path: /events

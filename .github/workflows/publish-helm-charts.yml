@@ -16,18 +16,16 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
     strategy:
       matrix:
         chart:
           - airflow
           - kafka-consumer
           - producer
-    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Helm
         uses: azure/setup-helm@v3
         with:

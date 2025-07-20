@@ -6,6 +6,7 @@
 *.tfplan
 backend*.hcl
 apps/.helm/**/charts/
-apps/.helm/**/.charts/*.tgz
+apps/.helm/**/.charts/
+**/*.tgz
 .docker-cache/
 __pycache__/

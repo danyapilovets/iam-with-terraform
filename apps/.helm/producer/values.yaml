@@ -5,14 +5,13 @@ image:
   tag: "1.0.0"
   pullPolicy: Always
 
-# 🔥 УРЕЗАНЫ РЕСУРСЫ для 6GB RAM системы
 resources:
   limits:
-    cpu: 300m        # Урезано с 500m
-    memory: 384Mi    # Урезано с 512Mi
+    cpu: 300m
+    memory: 384Mi
   requests:
-    cpu: 150m        # Урезано с 200m
-    memory: 192Mi    # Урезано с 256Mi
+    cpu: 150m
+    memory: 192Mi
 
 service:
   type: ClusterIP
@@ -23,7 +22,5 @@ kafka:
   topic: events.taxonomy
 
 postgres:
-  # Credentials will be injected from postgres-secret via External Secrets
-  # from AWS Secrets Manager: dev-iwt-postgres-creds
   host: postgres
   port: 5432

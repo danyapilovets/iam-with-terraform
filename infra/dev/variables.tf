@@ -20,7 +20,7 @@ variable "sg_id" {
 }
 
 variable "environment" {
-  description = "Environment name (e.g., dev, stage, prod)"
+  description = "Environment"
   type        = string
   default     = "dev"
 }

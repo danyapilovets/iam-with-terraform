@@ -1,18 +1,15 @@
-# Network resources
-
-# Public subnet reference
 data "aws_subnet" "public" {
-  id = var.public_subnet_id
+  id = var.ec2_public_subnet_id
 }
 
 module "vpce_s3" {
   source               = "../modules/vpc-endpoint"
   vpc_id               = data.aws_subnet.public.vpc_id
   service_name         = "com.amazonaws.${var.aws_region}.s3"
-  endpoint_type        = "Interface"  # ВАЖНО: Interface endpoint
-  subnet_ids           = [var.public_subnet_id]
-  security_group_ids   = [var.sg_id]
-  private_dns_enabled  = var.private_dns_enabled
+  endpoint_type        = "Interface"
+  subnet_ids           = [var.ec2_public_subnet_id]
+  security_group_ids   = [var.ec2_security_group_id]
+  private_dns_enabled  = var.vpc_endpoint_private_dns_enabled
   tags = {
     Environment = var.environment
     Type       = "Interface"
@@ -25,8 +22,8 @@ module "vpce_secrets_manager" {
   vpc_id               = data.aws_subnet.public.vpc_id
   service_name         = "com.amazonaws.${var.aws_region}.secretsmanager"
   endpoint_type        = "Interface"
-  subnet_ids           = [var.public_subnet_id]
-  security_group_ids   = [var.sg_id]
+  subnet_ids           = [var.ec2_public_subnet_id]
+  security_group_ids   = [var.ec2_security_group_id]
   private_dns_enabled  = false
   tags = {
     Environment = var.environment

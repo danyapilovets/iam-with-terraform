@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "ec2_assume" {
+data "aws_iam_policy_document" "ec2_assume_role" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "ec2_assume" {
   }
 }
 
-data "aws_iam_policy_document" "k8s_assume" {
+data "aws_iam_policy_document" "k8s_assume_role" {
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole", "sts:AssumeRoleWithWebIdentity"]
@@ -18,356 +18,262 @@ data "aws_iam_policy_document" "k8s_assume" {
       identifiers = ["ec2.amazonaws.com"]
     }
   }
+  
+  statement {
+    effect = "Allow" 
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/oidc.eks.${var.aws_region}.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "oidc.eks.${var.aws_region}.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE:sub"
+      values   = ["system:serviceaccount:kube-system:external-secrets-operator"]
+    }
+  }
 }
 
-data "aws_iam_policy_document" "terraform_assume" {
+data "aws_iam_policy_document" "terraform_assume_role" {
   statement {
-    sid     = "TerraformAssumeRole"
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
     principals {
       type        = "AWS"
       identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
     }
-    
     condition {
       test     = "StringEquals"
       variable = "aws:RequestedRegion"
       values   = [var.aws_region]
     }
-    
-    condition {
-      test     = "StringLike"
-      variable = "aws:userid"
-      values   = ["*:terraform-*"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "cross_account_assume" {
-  statement {
-    sid     = "AssumeRoleFromSpecificAccount"
-    effect  = "Allow"
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceVpce"
-      values   = [module.vpce_s3.vpc_endpoint_id]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "ec2:ResourceTag/Environment"
-      values   = ["production", "dev"]
-    }
-
-    condition {
-      test     = "DateGreaterThan"
-      variable = "aws:CurrentTime"
-      values   = ["2024-01-01T00:00:00Z"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "ec2_logs" {
-  statement {
-    effect    = "Allow"
-    actions   = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
-    ]
-    resources = ["arn:aws:logs:*:*:*"]
-  }
-}
-
-data "aws_iam_policy_document" "kafka_producer" {
-  statement {
-    sid    = "KafkaProducerAccess"
-    effect = "Allow"
-    actions = [
-      "kafka:DescribeCluster",
-      "kafka:GetBootstrapBrokers"
-    ]
-    resources = ["*"]
-  }
-}
-
-data "aws_iam_policy_document" "s3_write" {
-  statement {
-    sid    = "S3WriteAccessForConsumer"
-    effect = "Allow"
-    actions = [
-      "s3:PutObject",
-      "s3:PutObjectAcl"
-    ]
-    resources = ["${module.s3_private.bucket_arn}/kafka-data/*"]
-  }
-
-  statement {
-    sid    = "S3ListBucketForConsumer" 
-    effect = "Allow"
-    actions = ["s3:ListBucket"]
-    resources = [module.s3_private.bucket_arn]
-    condition {
-      test     = "StringLike"
-      variable = "s3:prefix"
-      values   = ["kafka-data/*"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "airflow_etl" {
-  statement {
-    sid = "SecretsReadAccess"
-    effect = "Allow"
-    actions = [
-      "secretsmanager:GetSecretValue"
-    ]
-    resources = [
-      data.aws_secretsmanager_secret.postgres_banking_creds.arn,
-      data.aws_secretsmanager_secret.airflow_admin_creds.arn
-    ]
-  }
-
-  statement {
-    sid = "S3DataAccess"
-    effect = "Allow" 
-    actions = [
-      "s3:GetObject",
-      "s3:PutObject"
-    ]
-    resources = ["${module.s3_private.bucket_arn}/airflow/*"]
-  }
-
-  statement {
-    sid = "CloudWatchLogs"
-    effect = "Allow"
-    actions = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream", 
-      "logs:PutLogEvents"
-    ]
-    resources = ["arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/airflow/*"]
-  }
-}
-
-data "aws_iam_policy_document" "producer_transaction" {
-  statement {
-    sid = "DatabaseSecretsAccess"
-    effect = "Allow"
-    actions = [
-      "secretsmanager:GetSecretValue"
-    ]
-    resources = [
-      data.aws_secretsmanager_secret.postgres_banking_creds.arn,
-      data.aws_secretsmanager_secret.producer_api_creds.arn
-    ]
-  }
-  
-  statement {
-    sid = "CloudWatchMetrics"
-    effect = "Allow"
-    actions = [
-      "cloudwatch:PutMetricData"
-    ]
-    resources = ["*"]
-    condition {
-      test = "StringEquals"
-      variable = "cloudwatch:namespace"
-      values = ["Banking/Producer"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "external_secrets" {
-  statement {
-    sid = "SecretsManagerReadOnly"
-    effect = "Allow"
-    actions = [
-      "secretsmanager:GetSecretValue",
-      "secretsmanager:DescribeSecret"
-    ]
-    resources = ["arn:aws:secretsmanager:${var.aws_region}:${data.aws_caller_identity.current.account_id}:secret:${local.name_prefix}-*"]
-  }
-}
-
-data "aws_iam_policy_document" "terraform_infrastructure" {
-  statement {
-    sid = "InfrastructureManagement"
-    effect = "Allow"
-    actions = [
-      "ec2:*",
-      "vpc:*",
-      "s3:CreateBucket",
-      "s3:DeleteBucket",
-      "s3:PutBucketPolicy",
-      "s3:GetBucketPolicy",
-      "s3:PutBucketVersioning",
-      "s3:PutBucketEncryption",
-      "iam:CreateRole",
-      "iam:CreatePolicy",
-      "iam:AttachRolePolicy",
-      "iam:DetachRolePolicy",
-      "iam:DeleteRole",
-      "iam:DeletePolicy",
-      "iam:GetRole",
-      "iam:GetPolicy",
-      "iam:ListRolePolicies",
-      "iam:ListAttachedRolePolicies",
-      "secretsmanager:CreateSecret",
-      "secretsmanager:UpdateSecret",
-      "secretsmanager:DeleteSecret",
-      "secretsmanager:TagResource"
-    ]
-    resources = ["*"]
-    condition {
-      test = "StringEquals"
-      variable = "aws:RequestedRegion"
-      values = [var.aws_region]
-    }
-  }
-}
-
-module "policy_ec2_logs" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-ec2-logs"
-  policy_json = data.aws_iam_policy_document.ec2_logs.json
-}
-
-module "policy_kafka_producer" {
-  source      = "../modules/iam-policy"  
-  name        = "${local.name_prefix}-kafka-producer"
-  policy_json = data.aws_iam_policy_document.kafka_producer.json
-}
-
-module "policy_s3_write" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-s3-write" 
-  policy_json = data.aws_iam_policy_document.s3_write.json
-}
-
-module "policy_airflow_etl" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-airflow-etl"
-  policy_json = data.aws_iam_policy_document.airflow_etl.json
-}
-
-module "policy_producer_transaction" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-producer-transaction"
-  policy_json = data.aws_iam_policy_document.producer_transaction.json
-}
-
-module "policy_external_secrets" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-external-secrets"
-  policy_json = data.aws_iam_policy_document.external_secrets.json
-}
-
-module "policy_terraform_infrastructure" {
-  source      = "../modules/iam-policy"
-  name        = "${local.name_prefix}-terraform-infrastructure"
-  policy_json = data.aws_iam_policy_document.terraform_infrastructure.json
-}
-
-module "role_ec2" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-producer-role"
-  assume_role_policy_json = data.aws_iam_policy_document.ec2_assume.json
-  managed_policy_arns     = [
-    module.policy_ec2_logs.policy_arn,
-    module.policy_kafka_producer.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "kafka-producer"
-    DataClassification = "highly-confidential"
-  }
-}
-
-module "role_kafka_consumer" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-consumer-role"
-  assume_role_policy_json = data.aws_iam_policy_document.cross_account_assume.json
-  managed_policy_arns     = [
-    module.policy_ec2_logs.policy_arn,
-    module.policy_s3_write.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "kafka-consumer-s3-writer"
-    DataClassification = "confidential"
-  }
-}
-
-module "role_airflow_etl" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-airflow-etl-role"
-  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume.json
-  managed_policy_arns     = [
-    module.policy_airflow_etl.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "airflow-etl-processing"
-    DataClassification = "confidential"
-  }
-}
-
-module "role_producer_transaction" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-producer-transaction-role"
-  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume.json
-  managed_policy_arns     = [
-    module.policy_producer_transaction.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "transaction-producer"
-    DataClassification = "highly-confidential"
-  }
-}
-
-module "role_external_secrets" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-external-secrets-role"
-  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume.json
-  managed_policy_arns     = [
-    module.policy_external_secrets.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "secrets-management"
-    DataClassification = "highly-confidential"
   }
 }
 
 module "role_terraform_infrastructure" {
-  source                  = "../modules/iam-role"
-  name                    = "${local.name_prefix}-terraform-infrastructure-role"
-  assume_role_policy_json = data.aws_iam_policy_document.terraform_assume.json
-  managed_policy_arns     = [
-    module.policy_terraform_infrastructure.policy_arn
-  ]
-  tags = {
-    Environment = var.environment
-    Purpose     = "infrastructure-management"
-    DataClassification = "system"
-  }
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-terraform-infrastructure-role"
+  assume_role_policy_json = data.aws_iam_policy_document.terraform_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "infrastructure-management"
+  })
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name_prefix = "${local.name_prefix}-"
-  role        = module.role_ec2.role_name
+module "role_airflow_etl" {
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-airflow-etl-role"
+  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "data-processing"
+  })
 }
 
-resource "aws_iam_instance_profile" "consumer_profile" {
-  name_prefix = "${local.name_prefix}-consumer-"
-  role        = module.role_kafka_consumer.role_name
+module "role_producer_transaction" {
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-producer-transaction-role"
+  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "transaction-ingestion"
+  })
+}
+
+module "role_kafka_consumer" {
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-consumer-role"
+  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "data-archival"
+  })
+}
+
+module "role_external_secrets" {
+  source = "../modules/iam-role"
+  
+  name                   = "${local.name_prefix}-external-secrets-role"
+  assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
+  
+  tags = merge(local.common_tags, {
+    Purpose = "secrets-management"
+  })
+}
+
+module "policy_terraform_infrastructure" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-terraform-infrastructure-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:*",
+          "s3:*",
+          "iam:*",
+          "secretsmanager:*",
+          "kms:*",
+          "logs:*"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:RequestedRegion" = var.aws_region
+          }
+        }
+      }
+    ]
+  })
+}
+
+module "policy_airflow_etl" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-airflow-etl-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          module.s3_private.bucket_arn,
+          "${module.s3_private.bucket_arn}/*",
+          module.s3_analytics.bucket_arn,
+          "${module.s3_analytics.bucket_arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = [
+          data.aws_secretsmanager_secret.postgres_banking_creds.arn,
+          data.aws_secretsmanager_secret.airflow_admin_creds.arn
+        ]
+      }
+    ]
+  })
+}
+
+module "policy_producer_transaction" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-producer-transaction-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl"
+        ]
+        Resource = "${module.s3_private.bucket_arn}/transactions/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = [
+          data.aws_secretsmanager_secret.postgres_banking_creds.arn,
+          data.aws_secretsmanager_secret.producer_api_creds.arn
+        ]
+      }
+    ]
+  })
+}
+
+module "policy_kafka_consumer" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-consumer-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:PutObjectAcl",
+          "s3:GetObject"
+        ]
+        Resource = "${module.s3_private.bucket_arn}/archive/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = data.aws_secretsmanager_secret.consumer_s3_creds.arn
+      }
+    ]
+  })
+}
+
+module "policy_external_secrets" {
+  source = "../modules/iam-policy"
+  
+  name = "${local.name_prefix}-external-secrets-policy"
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:ListSecrets"
+        ]
+        Resource = "*"
+        Condition = {
+          StringLike = {
+            "secretsmanager:Name" = "${local.name_prefix}-*"
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "terraform_infrastructure" {
+  role       = module.role_terraform_infrastructure.role_name
+  policy_arn = module.policy_terraform_infrastructure.policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "airflow_etl" {
+  role       = module.role_airflow_etl.role_name
+  policy_arn = module.policy_airflow_etl.policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "producer_transaction" {
+  role       = module.role_producer_transaction.role_name
+  policy_arn = module.policy_producer_transaction.policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "kafka_consumer" {
+  role       = module.role_kafka_consumer.role_name
+  policy_arn = module.policy_kafka_consumer.policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "external_secrets" {
+  role       = module.role_external_secrets.role_name
+  policy_arn = module.policy_external_secrets.policy_arn
 }

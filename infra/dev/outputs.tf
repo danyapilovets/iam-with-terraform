@@ -1,6 +1,28 @@
-output "bucket_name" {
-  description = "Name of the S3 bucket"
+output "s3_bucket_name" {
+  description = "Name of the S3 bucket for banking data storage"
   value       = module.s3_private.bucket_id
+}
+
+output "postgres_credentials_secret_arn" {
+  description = "ARN of PostgreSQL credentials secret"
+  value       = data.aws_secretsmanager_secret.postgres_banking_creds.arn
+}
+
+output "airflow_admin_credentials_secret_arn" {
+  description = "ARN of Airflow admin credentials secret"
+  value       = data.aws_secretsmanager_secret.airflow_admin_creds.arn
+}
+
+output "external_secrets_minikube_access_key_id" {
+  description = "Access Key ID for External Secrets minikube user"
+  value       = aws_iam_access_key.external_secrets_minikube.id
+  sensitive   = true
+}
+
+output "external_secrets_minikube_secret_access_key" {
+  description = "Secret Access Key for External Secrets minikube user"
+  value       = aws_iam_access_key.external_secrets_minikube.secret
+  sensitive   = true
 }
 
 output "terraform_infrastructure_role_arn" {
@@ -28,18 +50,8 @@ output "external_secrets_role_arn" {
   value       = module.role_external_secrets.role_arn
 }
 
-output "postgres_credentials_secret_arn" {
-  description = "ARN of PostgreSQL credentials secret"
-  value       = data.aws_secretsmanager_secret.postgres_banking_creds.arn
-}
-
-output "airflow_admin_credentials_secret_arn" {
-  description = "ARN of Airflow admin credentials secret"
-  value       = data.aws_secretsmanager_secret.airflow_admin_creds.arn
-}
-
 output "producer_api_credentials_secret_arn" {
-  description = "ARN of Producer API credentials secret" 
+  description = "ARN of Producer API credentials secret"
   value       = data.aws_secretsmanager_secret.producer_api_creds.arn
 }
 
@@ -51,16 +63,4 @@ output "consumer_s3_credentials_secret_arn" {
 output "external_secrets_config_secret_arn" {
   description = "ARN of External Secrets config secret"
   value       = data.aws_secretsmanager_secret.external_secrets_config.arn
-}
-
-output "external_secrets_minikube_access_key_id" {
-  description = "Access Key ID for External Secrets minikube user"
-  value       = aws_iam_access_key.external_secrets_minikube.id
-  sensitive   = true
-}
-
-output "external_secrets_minikube_secret_access_key" {
-  description = "Secret Access Key for External Secrets minikube user" 
-  value       = aws_iam_access_key.external_secrets_minikube.secret
-  sensitive   = true
 }

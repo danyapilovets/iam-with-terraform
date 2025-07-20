@@ -13,4 +13,41 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    executor: LocalExecutor
+    # МИНИМАЛЬНАЯ КОНФИГУРАЦИЯ AIRFLOW
+    executor: LocalExecutor  # Вместо Celery - экономим ресурсы
+    
+    # Минимальные ресурсы для webserver
+    webserver:
+      replicas: 1
+      resources:
+        limits:
+          memory: 1Gi
+          cpu: 500m
+        requests:
+          memory: 512Mi
+          cpu: 250m
+    
+    # Минимальные ресурсы для scheduler
+    scheduler:
+      replicas: 1
+      resources:
+        limits:
+          memory: 1Gi
+          cpu: 500m
+        requests:
+          memory: 512Mi
+          cpu: 250m
+    
+    # Простая БД - SQLite для dev (не PostgreSQL)
+    postgresql:
+      enabled: false
+    
+    # Конфигурация для банковского ETL
+    airflow:
+      config:
+        core:
+          executor: LocalExecutor
+          load_examples: false
+        webserver:
+          expose_config: true
+          web_server_port: 8080

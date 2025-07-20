@@ -1,3 +1,4 @@
 namespace: dev
 resources:
   - airflow-helmrelease.yaml
+  - airflow-ingress.yaml

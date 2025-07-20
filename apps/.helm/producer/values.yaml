@@ -1,7 +1,26 @@
+replicaCount: 1
+
 image:
   repository: producer
   tag: latest
   pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+service:
+  type: ClusterIP
+  port: 8001
+
 kafka:
   bootstrapServers: kafka:9092
-  topic: card_tx
+  topic: events.taxonomy
+
+postgres:
+  host: postgres
+  port: 5432

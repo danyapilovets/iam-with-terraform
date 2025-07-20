@@ -7,7 +7,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/.helm/kafka-consumer/.charts/kafka-consumer-0.0.2.tgz
+      chart: apps/.helm/kafka-consumer
       sourceRef:
         kind: GitRepository
         name: dev-repo

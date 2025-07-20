@@ -7,7 +7,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/.helm/airflow/.charts/airflow-0.0.2.tgz
+      chart: apps/.helm/airflow
       sourceRef:
         kind: GitRepository
         name: dev-repo

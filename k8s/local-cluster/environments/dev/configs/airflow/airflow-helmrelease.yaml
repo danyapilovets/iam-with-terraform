@@ -14,7 +14,7 @@ spec:
         namespace: flux-system
   values:
     # 🔥 ULTRA-LIGHT AIRFLOW для 6GB RAM
-    executor: LocalExecutor  # НЕ Celery! Экономим ресурсы
+    executor: "LocalExecutor"  # НЕ Celery! Экономим ресурсы
     
     # Минимальный webserver
     webserver:
@@ -54,7 +54,6 @@ spec:
     airflow:
       config:
         core:
-          executor: LocalExecutor
           load_examples: false
           max_active_runs_per_dag: 1
           dagbag_import_timeout: 30

@@ -16,4 +16,4 @@ spec:
           service:
             name: airflow-webserver
             port:
-              number: 8080 
+              number: 8080

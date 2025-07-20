@@ -35,7 +35,7 @@ variable "private_dns_enabled" {
   description = "Whether to enable Private DNS on the S3 Interface VPCE"
   type        = bool
   default     = false
-} 
+}
 
 variable "instance_type" {
   description = "EC2 instance type"

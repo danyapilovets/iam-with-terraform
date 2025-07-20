@@ -13,9 +13,7 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    # МИНИМАЛЬНЫЕ РЕСУРСЫ ДЛЯ CONSUMER
     replicaCount: 1
-    
     resources:
       limits:
         memory: 512Mi
@@ -23,16 +21,14 @@ spec:
       requests:
         memory: 256Mi
         cpu: 150m
-    
+
     s3Bucket: dev-iwt-private-2cap2d
     awsSecret: aws-secret
     awsRegion: eu-central-1
-    
+
     kafka:
       bootstrapServers: kafka:9092
       topic: card_tx
       consumerGroup: card-tx-s3-writer
-    
-    # Настройки батчинга для S3
     batchSize: 100
     flushIntervalSeconds: 30

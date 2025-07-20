@@ -13,44 +13,51 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    # 🔥 ULTRA-LIGHT AIRFLOW для 6GB RAM
-    executor: "LocalExecutor"  # НЕ Celery! Экономим ресурсы
-    
-    # Минимальный webserver
+    executor: "LocalExecutor"
     webserver:
       replicas: 1
       resources:
         limits:
-          memory: 512Mi    # Урезано с 1Gi
-          cpu: 300m        # Урезано с 500m
+          memory: 512Mi
+          cpu: 300m
         requests:
-          memory: 256Mi    # Урезано с 512Mi
-          cpu: 150m        # Урезано с 250m
+          memory: 256Mi
+          cpu: 150m
     
-    # Минимальный scheduler
     scheduler:
       replicas: 1
       resources:
         limits:
-          memory: 512Mi    # Урезано с 1Gi
-          cpu: 300m        # Урезано с 500m
+          memory: 512Mi
+          cpu: 300m
         requests:
-          memory: 256Mi    # Урезано с 512Mi
-          cpu: 150m        # Урезано с 250m
-    
-    # БЕЗ PostgreSQL! Используем SQLite для dev
+          memory: 256Mi
+          cpu: 150m
     postgresql:
       enabled: false
-    
-    # БЕЗ Redis! LocalExecutor не нужен Redis
+    serviceAccount:
+      create: false
+      name: "airflow-serviceaccount"
+    secret:
+    - envName: "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
+      secretName: "postgres-secret"
+      secretKey: "AIRFLOW_DB_CONN"
+    extraSecrets:
+      airflow-s3-connection:
+        - envName: "AIRFLOW_CONN_S3_DATA"
+          secretName: "airflow-s3-connection"
+          secretKey: "AIRFLOW_CONN_S3_DATA"
+        - envName: "AIRFLOW_CONN_POSTGRES_DATA"
+          secretName: "airflow-s3-connection"
+          secretKey: "AIRFLOW_CONN_POSTGRES_DATA"
     redis:
       enabled: false
-      
-    # БЕЗ Workers! LocalExecutor
     workers:
+      replicas: 0
+    statsd:
       enabled: false
-    
-    # Минимальная конфигурация
+    triggerer:
+      enabled: false
     airflow:
       config:
         core:
@@ -58,8 +65,8 @@ spec:
           max_active_runs_per_dag: 1
           dagbag_import_timeout: 30
         webserver:
-          workers: 1               # Минимум workers
+          workers: 1
           worker_refresh_interval: 60
         scheduler:
           catchup_by_default: false
-          max_threads: 2           # Минимум threads
+          max_threads: 2

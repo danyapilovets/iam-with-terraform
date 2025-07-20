@@ -5,34 +5,46 @@ from pendulum import yesterday
 from helpers.default_args import default_args
 
 with DAG(
-        dag_id="fill_order_status_stats_table",
+        dag_id="fill_daily_transaction_summary",
         default_args=default_args,
-        description="fill table order_status_stats DAG",
-        schedule="@once",
+        description="Banking daily transaction summary DAG",
+        schedule="@daily",
         start_date=yesterday(),
         catchup=True,
 ) as dag:
-    drop_status = PostgresOperator(
-        task_id="drop_order_status_stats",
+    clear_summary = PostgresOperator(
+        task_id="clear_daily_transaction_summary",
         postgres_conn_id="postgres_data",
-        sql="truncate order_status_stats"
+        sql="DELETE FROM daily_transaction_summary WHERE summary_date = '{{ ds }}'"
     )
-    order_status_stats = PostgresOperator(
-        task_id="fill_order_status_stats",
+    
+    fill_summary = PostgresOperator(
+        task_id="fill_daily_transaction_summary",
         postgres_conn_id="postgres_data",
         sql="""
-            INSERT INTO order_status_stats
-            select
-                CAST(date_sale AS date) as dt,
-                status_name as order_status_name,
-                COUNT(sale.sale_id) as orders_count
-            from sale
-            join order_status
-            on order_status.sale_id = sale.sale_id
-            join status_name
-            on status_name.status_name_id = order_status.status_name_id
-            group by dt, order_status_name
+            INSERT INTO daily_transaction_summary (
+                summary_date,
+                account_id,
+                transaction_type,
+                transaction_count,
+                total_amount,
+                avg_amount
+            )
+            SELECT 
+                '{{ ds }}'::date as summary_date,
+                COALESCE(from_account_id, to_account_id) as account_id,
+                transaction_type,
+                COUNT(*) as transaction_count,
+                SUM(amount) as total_amount,
+                AVG(amount) as avg_amount
+            FROM transactions 
+            WHERE DATE(created_at) = '{{ ds }}'
+            AND status = 'completed'
+            AND (from_account_id IS NOT NULL OR to_account_id IS NOT NULL)
+            GROUP BY 
+                COALESCE(from_account_id, to_account_id),
+                transaction_type
             """
     )
 
-    drop_status >> order_status_stats
+    clear_summary >> fill_summary

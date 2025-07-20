@@ -1,4 +1,5 @@
 namespace: dev
 resources:
+  - airflow-serviceaccount.yaml
   - airflow-helmrelease.yaml
   - airflow-ingress.yaml

@@ -1,5 +1,3 @@
-# S3 landing bucket + policy restricting access via VPCE
-
 resource "random_string" "suffix" {
   length  = var.suffix_length
   upper   = false
@@ -17,7 +15,6 @@ module "s3_private" {
   }
 }
 
-# НОВОЕ: Дополнительный bucket для Airflow результатов
 module "s3_analytics" {
   source        = "../modules/s3-bucket"
   bucket_name   = "${local.name_prefix}-analytics-${random_string.suffix.result}"
@@ -29,8 +26,6 @@ module "s3_analytics" {
   }
 }
 
-# Bucket policy allowing access only through created VPCE
-# ✅ ОТЛИЧНО: Демонстрация Interface VPC Endpoint безопасности
 data "aws_iam_policy_document" "bucket_vpce" {
   statement {
     sid       = "AllowReadOnlyFromVpce"
@@ -39,7 +34,7 @@ data "aws_iam_policy_document" "bucket_vpce" {
     resources = ["${module.s3_private.bucket_arn}/*"]
     principals {
       type        = "*"
-      identifiers = ["*"]  # ⚠️ ОБОСНОВАНИЕ: aws:SourceVpce condition ограничивает доступ только через наш VPCE
+      identifiers = ["*"]
     }
     condition {
       test     = "StringEquals"
@@ -48,7 +43,6 @@ data "aws_iam_policy_document" "bucket_vpce" {
     }
   }
 
-  # НОВОЕ: Разрешить запись в landing/ только с определенными тегами
   statement {
     sid       = "AllowWriteFromTaggedResources"
     effect    = "Allow" 
@@ -73,7 +67,6 @@ data "aws_iam_policy_document" "bucket_vpce" {
     }
   }
 
-  # НОВОЕ: Cross-account access для Airflow в другом аккаунте
   statement {
     sid    = "CrossAccountAirflowAccess"
     effect = "Allow"
@@ -87,7 +80,7 @@ data "aws_iam_policy_document" "bucket_vpce" {
     ]
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::ACCOUNT-AIRFLOW:role/airflow-execution-role"]  # Замените на реальный
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/dev-iwt-airflow-etl-role"]
     }
     condition {
       test     = "StringEquals"
@@ -96,7 +89,7 @@ data "aws_iam_policy_document" "bucket_vpce" {
     }
   }
 
-  # НОВОЕ: Запретить небезопасное соединение (enforce HTTPS)
+
   statement {
     sid       = "DenyNonHTTPS"
     effect    = "Deny"
@@ -122,7 +115,6 @@ resource "aws_s3_bucket_policy" "vpce_policy" {
   policy = data.aws_iam_policy_document.bucket_vpce.json
 }
 
-# НОВОЕ: Lifecycle policy для автоматической очистки старых данных
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
   bucket = module.s3_private.bucket_id
 
@@ -135,7 +127,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
     }
 
     expiration {
-      days = 30  # Удалять данные старше 30 дней
+      days = 30
     }
 
     noncurrent_version_expiration {
@@ -152,12 +144,12 @@ resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
     }
 
     transition {
-      days          = 7
-      storage_class = "STANDARD_IA"  # Переводить в более дешевое хранилище
+      days          = 30
+      storage_class = "STANDARD_IA"
     }
 
     transition {
-      days          = 30
+      days          = 90
       storage_class = "GLACIER"
     }
   }

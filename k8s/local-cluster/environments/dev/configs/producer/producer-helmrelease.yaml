@@ -13,9 +13,7 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    # МИНИМАЛЬНЫЕ РЕСУРСЫ ДЛЯ PRODUCER
     replicaCount: 1
-    
     resources:
       limits:
         memory: 256Mi
@@ -23,12 +21,9 @@ spec:
       requests:
         memory: 128Mi
         cpu: 100m
-    
     kafka:
       bootstrapServers: kafka:9092
       topic: card_tx
-    
-    # Настройки для банковских транзакций
     app:
-      intervalSeconds: 5  # Генерировать каждые 5 секунд
-      batchSize: 10       # По 10 транзакций за раз
+      intervalSeconds: 5
+      batchSize: 10

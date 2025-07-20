@@ -10,3 +10,4 @@ apps/.helm/**/.charts/
 **/*.tgz
 .docker-cache/
 __pycache__/
+.terraform/

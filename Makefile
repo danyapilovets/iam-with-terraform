@@ -47,3 +47,5 @@ build-consumer: ## Build image in Minikube Docker daemon
 
 include .env
 include k8s/local-cluster/cluster-settings/_cluster.mk
+include k8s/local-cluster/flux/_flux.mk
+

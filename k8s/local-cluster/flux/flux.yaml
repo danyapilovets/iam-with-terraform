@@ -1,4 +1,5 @@
 ---
+# =================== GIT REPOSITORY ===================
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: GitRepository
 metadata:
@@ -8,18 +9,148 @@ spec:
   interval: 30s
   url: https://github.com/danyapilovets/iam-with-terraform
   ref:
-    branch: main
+    branch: feature/iwt
+
 ---
+# =================== HELM REPOSITORIES ===================
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://charts.bitnami.com/bitnami
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://charts.external-secrets.io
+
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: apache-airflow
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://airflow.apache.org
+
+---
+# =================== NAMESPACE ===================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels:
+    environment: dev
+    managed-by: flux
+
+---
+# =================== SERVICE KUSTOMIZATIONS ===================
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: dev-apps
+  name: dev-external-secrets
   namespace: flux-system
 spec:
   interval: 5m
-  path: ./k8s/local-cluster/environments
+  path: "./k8s/local-cluster/environments/dev/configs/external-secrets"
   prune: true
   sourceRef:
     kind: GitRepository
     name: dev-repo
   timeout: 2m
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-secrets
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: "./k8s/local-cluster/environments/dev/configs/secrets"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dev-repo
+  timeout: 2m
+  dependsOn:
+    - name: dev-external-secrets
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-kafka
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: "./k8s/local-cluster/environments/dev/configs/kafka"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dev-repo
+  timeout: 5m
+  dependsOn:
+    - name: dev-secrets
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-producer
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: "./k8s/local-cluster/environments/dev/configs/producer"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dev-repo
+  timeout: 2m
+  dependsOn:
+    - name: dev-kafka
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-consumer
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: "./k8s/local-cluster/environments/dev/configs/consumer"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dev-repo
+  timeout: 2m
+  dependsOn:
+    - name: dev-kafka
+    - name: dev-secrets
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-airflow
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: "./k8s/local-cluster/environments/dev/configs/airflow"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: dev-repo
+  timeout: 10m
+  dependsOn:
+    - name: dev-kafka
+    - name: dev-secrets

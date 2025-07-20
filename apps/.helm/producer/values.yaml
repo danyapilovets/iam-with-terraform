@@ -5,13 +5,14 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+# 🔥 УРЕЗАНЫ РЕСУРСЫ для 6GB RAM системы
 resources:
   limits:
-    cpu: 500m
-    memory: 512Mi
+    cpu: 300m        # Урезано с 500m
+    memory: 384Mi    # Урезано с 512Mi
   requests:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 150m        # Урезано с 200m
+    memory: 192Mi    # Урезано с 256Mi
 
 service:
   type: ClusterIP
@@ -22,5 +23,7 @@ kafka:
   topic: events.taxonomy
 
 postgres:
+  # Credentials will be injected from postgres-secret via External Secrets
+  # from AWS Secrets Manager: dev-iwt-postgres-creds
   host: postgres
   port: 5432

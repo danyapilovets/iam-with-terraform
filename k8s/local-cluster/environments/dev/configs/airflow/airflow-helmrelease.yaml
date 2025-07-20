@@ -13,41 +13,54 @@ spec:
         name: dev-repo
         namespace: flux-system
   values:
-    # МИНИМАЛЬНАЯ КОНФИГУРАЦИЯ AIRFLOW
-    executor: LocalExecutor  # Вместо Celery - экономим ресурсы
+    # 🔥 ULTRA-LIGHT AIRFLOW для 6GB RAM
+    executor: LocalExecutor  # НЕ Celery! Экономим ресурсы
     
-    # Минимальные ресурсы для webserver
+    # Минимальный webserver
     webserver:
       replicas: 1
       resources:
         limits:
-          memory: 1Gi
-          cpu: 500m
+          memory: 512Mi    # Урезано с 1Gi
+          cpu: 300m        # Урезано с 500m
         requests:
-          memory: 512Mi
-          cpu: 250m
+          memory: 256Mi    # Урезано с 512Mi
+          cpu: 150m        # Урезано с 250m
     
-    # Минимальные ресурсы для scheduler
+    # Минимальный scheduler
     scheduler:
       replicas: 1
       resources:
         limits:
-          memory: 1Gi
-          cpu: 500m
+          memory: 512Mi    # Урезано с 1Gi
+          cpu: 300m        # Урезано с 500m
         requests:
-          memory: 512Mi
-          cpu: 250m
+          memory: 256Mi    # Урезано с 512Mi
+          cpu: 150m        # Урезано с 250m
     
-    # Простая БД - SQLite для dev (не PostgreSQL)
+    # БЕЗ PostgreSQL! Используем SQLite для dev
     postgresql:
       enabled: false
     
-    # Конфигурация для банковского ETL
+    # БЕЗ Redis! LocalExecutor не нужен Redis
+    redis:
+      enabled: false
+      
+    # БЕЗ Workers! LocalExecutor
+    workers:
+      enabled: false
+    
+    # Минимальная конфигурация
     airflow:
       config:
         core:
           executor: LocalExecutor
           load_examples: false
+          max_active_runs_per_dag: 1
+          dagbag_import_timeout: 30
         webserver:
-          expose_config: true
-          web_server_port: 8080
+          workers: 1               # Минимум workers
+          worker_refresh_interval: 60
+        scheduler:
+          catchup_by_default: false
+          max_threads: 2           # Минимум threads

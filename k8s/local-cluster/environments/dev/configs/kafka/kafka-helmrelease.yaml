@@ -14,27 +14,39 @@ spec:
         name: bitnami
         namespace: flux-system
   values:
-    replicaCount: 1  
+    # 🔥 ULTRA-LIGHT для 6GB RAM
+    replicaCount: 1  # Только 1 replica вместо 3
+    
     resources:
       limits:
-        memory: 1Gi
-        cpu: 1000m
+        memory: 768Mi      # Урезано с 1Gi
+        cpu: 600m          # Урезано с 1000m
       requests:
-        memory: 512Mi
-        cpu: 500m
+        memory: 384Mi      # Урезано с 512Mi  
+        cpu: 300m          # Урезано с 500m
 
-    jvmOpts: "-Xms256m -Xmx512m"
+    # Минимальный JVM heap
+    jvmOpts: "-Xms128m -Xmx384m"  # Урезано с 256m-512m
     
+    # Отключаем все метрики
     metrics:
       kafka:
         enabled: false
       jmx:
         enabled: false
     
-    # Простая конфигурация логов  
-    logRetentionBytes: 1073741824  # 1GB вместо дефолтных
-    logRetentionHours: 168  # 7 дней
+    # Агрессивная очистка логов
+    logRetentionBytes: 268435456   # 256MB вместо 1GB
+    logRetentionHours: 24          # 1 день вместо 168 часов
     
-    # Минимальные настройки персистентности
+    # Минимальное хранилище
     persistence:
-      size: 2Gi  # Маленький диск для dev
+      size: 1Gi  # Урезано с 2Gi
+    
+    # Отключаем лишние features для dev
+    deleteTopicEnable: true
+    autoCreateTopicsEnable: true
+    
+    # Быстрая загрузка
+    numNetworkThreads: 2
+    numIoThreads: 2

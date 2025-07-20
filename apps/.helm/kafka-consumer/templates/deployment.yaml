@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: {{ include "kafka-consumer.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "kafka-consumer.name" . }}
@@ -20,16 +20,33 @@ spec:
       containers:
       - name: consumer
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
+          # AWS S3 credentials from External Secrets
           - name: AWS_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
-                name: aws-secret
-                key: access_key
+                name: {{ .Values.awsSecret }}
+                key: aws_access_key_id
           - name: AWS_SECRET_ACCESS_KEY
             valueFrom:
               secretKeyRef:
-                name: aws-secret
-                key: secret_key
+                name: {{ .Values.awsSecret }}
+                key: aws_secret_access_key
+          - name: AWS_REGION
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.awsSecret }}
+                key: aws_region
           - name: S3_BUCKET
-            value: {{ .Values.s3Bucket }} 
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.awsSecret }}
+                key: s3_bucket
+          # Kafka configuration
+          - name: BOOTSTRAP_SERVERS
+            value: {{ .Values.kafka.bootstrapServers }}
+          - name: KAFKA_TOPIC
+            value: {{ .Values.kafka.topic }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }} 

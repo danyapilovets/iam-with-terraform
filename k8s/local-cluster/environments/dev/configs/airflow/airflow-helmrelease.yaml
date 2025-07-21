@@ -7,10 +7,29 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/airflow/.charts/airflow-0.1.0.tgz
+      chart: airflow
+      version: 0.0.2
       sourceRef:
-        kind: GitRepository
-        name: dev-repo
+        kind: HelmRepository
+        name: github-packages
         namespace: flux-system
   values:
-    executor: LocalExecutor 
+    airflow:
+      executor: "LocalExecutor"
+      postgresql:
+        enabled: false
+      redis:
+        enabled: false
+      workers:
+        replicas: 0
+      triggerer:
+        enabled: false
+      statsd:
+        enabled: false
+      serviceAccount:
+        create: false
+        name: "airflow-serviceaccount"
+      scheduler:
+        replicas: 1
+      webserver:
+        replicas: 1

@@ -1,3 +1,4 @@
 namespace: dev
 resources:
-  - consumer-helmrelease.yaml 
+  - consumer-serviceaccount.yaml
+  - consumer-helmrelease.yaml

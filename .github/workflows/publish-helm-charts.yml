@@ -1,0 +1,49 @@
+name: Publish Charts
+
+on:
+  push:
+    branches: [main, feature/iwt]
+    paths:
+      - 'apps/.helm/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish-charts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        chart:
+          - airflow
+          - kafka-consumer
+          - producer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package and Push Chart
+        run: |
+          cd apps/.helm/${{ matrix.chart }}
+          CHART_VERSION=$(helm show chart . | grep '^version:' | awk '{print $2}')
+          echo "Publishing ${{ matrix.chart }} version ${CHART_VERSION}"
+
+          helm dependency update .
+          helm package .
+          helm push ${{ matrix.chart }}-${CHART_VERSION}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/helm-charts

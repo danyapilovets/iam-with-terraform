@@ -35,15 +35,13 @@ charts:
 	helm package apps/.helm/kafka-consumer -d apps/.helm/kafka-consumer/.charts
 	helm package apps/.helm/producer -d apps/.helm/producer/.charts
 
-.PHONY: chartsye
-# Build kafka-s3-consumer image from hidden apps/.docker directory and load into Minikube cache
-build-consumer: ## Build image in Minikube Docker daemon
-	@echo "▶ Switching docker-env to Minikube"
-	eval $$(minikube -p minikube docker-env) && \
-	docker build --platform=linux/amd64 -t kafka-s3-consumer:1.0.0 apps/.docker/kafka-s3-consumer
-	@echo "✔ Image built inside Minikube; ready to use"
+deploy: charts ## Deploy banking system
+	$(MAKE) apply
+	kubectl apply -k k8s/local-cluster/environments/dev/
 
-.PHONY: build-consumer
+.PHONY: chartsye
 
 include .env
 include k8s/local-cluster/cluster-settings/_cluster.mk
+include k8s/local-cluster/flux/_flux.mk
+

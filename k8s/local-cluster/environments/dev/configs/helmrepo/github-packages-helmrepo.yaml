@@ -1,8 +1,9 @@
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: external-secrets
+  name: github-packages
   namespace: flux-system
 spec:
-  url: https://charts.external-secrets.io
-  interval: 30m 
+  interval: 5m
+  type: oci
+  url: oci://ghcr.io/danyapilovets/helm-charts

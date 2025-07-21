@@ -1,7 +1,26 @@
+replicaCount: 1
+
 image:
-  repository: producer
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/danyapilovets/producer
+  tag: "1.0.1"
+  pullPolicy: Always
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 384Mi
+  requests:
+    cpu: 150m
+    memory: 192Mi
+
+service:
+  type: ClusterIP
+  port: 8001
+
 kafka:
   bootstrapServers: kafka:9092
-  topic: card_tx
+  topic: banking.transactions
+
+postgres:
+  host: postgres
+  port: 5432

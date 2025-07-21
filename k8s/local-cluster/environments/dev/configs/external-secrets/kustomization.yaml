@@ -1,4 +1,4 @@
 namespace: dev
 resources:
-  - helmrepo/external-secrets-helmrepo.yaml
-  - external-secrets-helmrelease.yaml 
+  - external-secrets-serviceaccount.yaml
+  - external-secrets-helmrelease.yaml

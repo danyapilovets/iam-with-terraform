@@ -7,12 +7,28 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: apps/kafka-consumer/.charts/kafka-consumer-0.1.0.tgz
+      chart: kafka-consumer
+      version: 0.0.2
       sourceRef:
-        kind: GitRepository
-        name: dev-repo
+        kind: HelmRepository
+        name: github-packages
         namespace: flux-system
   values:
+    replicaCount: 1
+    resources:
+      limits:
+        memory: 512Mi
+        cpu: 300m
+      requests:
+        memory: 256Mi
+        cpu: 150m
+
     s3Bucket: dev-iwt-private-2cap2d
-    awsSecret: aws-secret
     awsRegion: eu-central-1
+
+    kafka:
+      bootstrapServers: kafka:9092
+      topic: card_tx
+      consumerGroup: card-tx-s3-writer
+    batchSize: 100
+    flushIntervalSeconds: 30

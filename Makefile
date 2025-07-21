@@ -40,14 +40,6 @@ deploy: charts ## Deploy banking system
 	kubectl apply -k k8s/local-cluster/environments/dev/
 
 .PHONY: chartsye
-# Build kafka-s3-consumer image from hidden apps/.docker directory and load into Minikube cache
-build-consumer: ## Build image in Minikube Docker daemon
-	@echo "▶ Switching docker-env to Minikube"
-	eval $$(minikube -p minikube docker-env) && \
-	docker build --platform=linux/amd64 -t kafka-s3-consumer:1.0.0 apps/.docker/kafka-s3-consumer
-	@echo "✔ Image built inside Minikube; ready to use"
-
-.PHONY: build-consumer
 
 include .env
 include k8s/local-cluster/cluster-settings/_cluster.mk

@@ -4,4 +4,4 @@ namespace: dev
 
 resources:
   - postgres-deployment.yaml
-  - postgres-configmap.yaml 
+  - postgres-configmap.yaml

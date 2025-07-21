@@ -100,18 +100,18 @@ def test_banking_data_pipeline():
             print(f"   {tx[0]}: ${tx[1]:.2f} {tx[2]} (Risk: {tx[3]}, Rule: {tx[4]})")
     else:
         print("   No risky transactions detected yet")
-    
+
     return "banking_etl_test_completed"
 
 def export_banking_analytics_to_s3():
     try:
         postgres_hook = PostgresHook(postgres_conn_id='postgres_data')
         s3_hook = S3Hook(aws_conn_id='s3_data')
-        
+
         print("=== EXPORTING BANKING ANALYTICS TO S3 ===")
-        
+
         analytics_sql = """
-        SELECT 
+        SELECT
             dts.summary_date,
             a.account_number,
             c.first_name || ' ' || c.last_name as customer_name,
@@ -126,27 +126,28 @@ def export_banking_analytics_to_s3():
         WHERE dts.summary_date >= CURRENT_DATE - INTERVAL '30 days'
         ORDER BY dts.summary_date DESC, dts.total_amount DESC
         """
-        
+
         records = postgres_hook.get_records(analytics_sql)
-        
+
         if records:
             csv_content = "date,account_number,customer_name,transaction_type,count,total_amount,avg_amount,balance\n"
             for record in records:
                 csv_content += f"{','.join(str(field) for field in record)}\n"
-            
+
+
             key = f"banking-analytics/{datetime.now().strftime('%Y/%m/%d')}/daily_summary.csv"
             s3_hook.load_string(
                 string_data=csv_content,
                 bucket_name='dev-iwt-private-2cap2d',
                 key=key
             )
-            
+
             print(f"Exported {len(records)} analytics records to S3: {key}")
         else:
             print("No analytics data to export")
-            
+
         return "s3_export_completed"
-        
+
     except Exception as e:
         print(f"Failed to export to S3: {str(e)}")
         raise e
@@ -165,10 +166,10 @@ with DAG(
         task_id='test_banking_data_pipeline',
         python_callable=test_banking_data_pipeline
     )
-    
+
     export_analytics = PythonOperator(
         task_id='export_banking_analytics_to_s3',
         python_callable=export_banking_analytics_to_s3
     )
-    
-    test_pipeline >> export_analytics 
+
+    test_pipeline >> export_analytics

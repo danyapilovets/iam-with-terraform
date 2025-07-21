@@ -5,7 +5,6 @@ metadata:
   namespace: dev
 data:
   01-init-tables.sql: |
-    -- События банковских транзакций (из ваших референсных проектов)
     CREATE TABLE IF NOT EXISTS Events (
         id SERIAL PRIMARY KEY,
         type varchar(255),
@@ -17,8 +16,7 @@ data:
         CONSTRAINT check_state
         CHECK(state IN('created', 'active', 'finished'))
     );
-    
-    -- Таблица sale из Airflow проекта
+
     CREATE TABLE IF NOT EXISTS sale (
         id SERIAL PRIMARY KEY,
         order_date DATE,
@@ -26,23 +24,20 @@ data:
         amount DECIMAL(10,2),
         customer_id INTEGER
     );
-    
-    -- Таблица для агрегированной статистики
+
     CREATE TABLE IF NOT EXISTS order_status_stats (
         dt DATE,
-        order_status_name VARCHAR(100), 
+        order_status_name VARCHAR(100),
         orders_count INTEGER,
         PRIMARY KEY (dt, order_status_name)
     );
   02-fill-sample-data.sql: |
-    -- Примеры банковских событий
     INSERT INTO Events (type, team_1, team_2, event_date, score, state) VALUES
     ('transaction', 'user_123', 'merchant_456', '2024-01-19', '250.00', 'finished'),
     ('transaction', 'user_789', 'merchant_101', '2024-01-19', '75.50', 'finished'),
     ('transaction', 'user_456', 'merchant_789', '2024-01-19', '1200.00', 'created')
     ON CONFLICT DO NOTHING;
-    
-    -- Примеры продаж
+
     INSERT INTO sale (order_date, order_status_name, amount, customer_id) VALUES
     ('2024-01-19', 'completed', 250.00, 123),
     ('2024-01-19', 'pending', 75.50, 789), 

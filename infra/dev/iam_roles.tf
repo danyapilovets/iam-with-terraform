@@ -18,9 +18,9 @@ data "aws_iam_policy_document" "k8s_assume_role" {
       identifiers = ["ec2.amazonaws.com"]
     }
   }
-  
+
   statement {
-    effect = "Allow" 
+    effect = "Allow"
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
@@ -52,10 +52,10 @@ data "aws_iam_policy_document" "terraform_assume_role" {
 
 module "role_terraform_infrastructure" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-terraform-infrastructure-role"
   assume_role_policy_json = data.aws_iam_policy_document.terraform_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "infrastructure-management"
   })
@@ -63,10 +63,10 @@ module "role_terraform_infrastructure" {
 
 module "role_airflow_etl" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-airflow-etl-role"
   assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "data-processing"
   })
@@ -74,10 +74,10 @@ module "role_airflow_etl" {
 
 module "role_producer_transaction" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-producer-transaction-role"
   assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "transaction-ingestion"
   })
@@ -85,10 +85,10 @@ module "role_producer_transaction" {
 
 module "role_kafka_consumer" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-consumer-role"
   assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "data-archival"
   })
@@ -96,10 +96,10 @@ module "role_kafka_consumer" {
 
 module "role_external_secrets" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-external-secrets-role"
   assume_role_policy_json = data.aws_iam_policy_document.k8s_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "secrets-management"
   })
@@ -108,10 +108,10 @@ module "role_external_secrets" {
 # EC2 Demo Role
 module "role_ec2_demo" {
   source = "../modules/iam-role"
-  
+
   name                   = "${local.name_prefix}-ec2-demo-role"
   assume_role_policy_json = data.aws_iam_policy_document.ec2_assume_role.json
-  
+
   tags = merge(local.common_tags, {
     Purpose = "demo-instance"
   })
@@ -119,7 +119,7 @@ module "role_ec2_demo" {
 
 module "policy_terraform_infrastructure" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-terraform-infrastructure-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -147,7 +147,7 @@ module "policy_terraform_infrastructure" {
 
 module "policy_airflow_etl" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-airflow-etl-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -184,7 +184,7 @@ module "policy_airflow_etl" {
 
 module "policy_producer_transaction" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-producer-transaction-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -214,7 +214,7 @@ module "policy_producer_transaction" {
 
 module "policy_kafka_consumer" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-consumer-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -242,7 +242,7 @@ module "policy_kafka_consumer" {
 
 module "policy_external_secrets" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-external-secrets-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -265,10 +265,9 @@ module "policy_external_secrets" {
   })
 }
 
-# EC2 Basic Policy
 module "policy_ec2_demo" {
   source = "../modules/iam-policy"
-  
+
   name = "${local.name_prefix}-ec2-demo-policy"
   policy_json = jsonencode({
     Version = "2012-10-17"

@@ -46,4 +46,4 @@ jobs:
 
           helm dependency update .
           helm package .
-          helm push ${{ matrix.chart }}-${CHART_VERSION}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/helm-charts 
+          helm push ${{ matrix.chart }}-${CHART_VERSION}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/helm-charts
